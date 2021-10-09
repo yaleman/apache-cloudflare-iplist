@@ -1,3 +1,3 @@
 # Apache CloudFlare IPList Updater
 
-Grabs URLs and updates lists.
+Designed for updating Apache config to trust cloudflare headers, will work with any IP list though.
