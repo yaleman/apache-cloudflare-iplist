@@ -45,11 +45,10 @@ def load_file(filename: str, logger: logging.Logger) -> list:
 
 
 @click.command()
-@click.option("--input", "-i", "input_file", default="./cloudflare-ip-list.conf", type=click.Path(exists=False), help="Load existing list from a file, defaults to ./cloudflare-ip-list.conf")
-@click.option("--output", "-o", default="./cloudflare-ip-list.conf", type=click.Path(exists=False), help="Write list to a file, defaults to ./cloudflare-ip-list.conf")
+@click.argument("filename", type=click.Path(exists=False))
 @click.option("--url", "-u", default=URL_LIST, multiple=True, help="URLs to grab, specify multiple times for more than one URL. Defaults to cloudflare's IPv4 and IPv6 lists.")
 @click.option("--noop", "-n", is_flag=True, help="Don't make changes")
-@click.option("--action", "-a", type=click.Choice(["append", "replace"]), default="replace", help="Either append new entries or replace the file. Default: replace")
+@click.option("--action", "-a", type=click.Choice(["append", "replace"]), default="replace", help="Either append new entries or replace the file with the IPs in the lists. Default: replace")
 @click.option(
     "-d",
     "--debug",
@@ -57,7 +56,7 @@ def load_file(filename: str, logger: logging.Logger) -> list:
     help="Set logging to debug",
 )
 # pylint: disable=too-many-arguments,too-many-branches
-def cli(input_file: str, output: str, noop: bool, url: list, action: str, debug: bool):
+def cli(input_file: str, filename: str, noop: bool, url: list, action: str, debug: bool):
     """ CLI Interface for pulling lists of IPs and making an Apache configuration with RemoteIPTrustedProxy <IP> lines."""
 
     if debug:
@@ -70,7 +69,7 @@ def cli(input_file: str, output: str, noop: bool, url: list, action: str, debug:
 
     logger.debug("In %s mode", action)
     logger.debug("Input file:  %s", input_file)
-    logger.debug("Output file: %s", output)
+    logger.debug("filename file: %s", filename)
 
     if noop:
         logger.warning("In noop mode, no files will be changed.")
@@ -80,8 +79,8 @@ def cli(input_file: str, output: str, noop: bool, url: list, action: str, debug:
         logger.error("Asking to append but input file doesn't exist, bailing.")
         sys.exit(1)
     elif action == "append":
-        if output != input_file:
-            logger.warning("Setting output to '%s', was '%s' as append mode is enabled.", input_file, output)
+        if filename != input_file:
+            logger.warning("Setting filename to '%s', was '%s' as append mode is enabled.", input_file, filename)
         input_data = load_file(input_file, logger)
     else:
         input_data = []
@@ -97,7 +96,7 @@ def cli(input_file: str, output: str, noop: bool, url: list, action: str, debug:
         logger.debug("Full list: %s", results)
 
     if not noop:
-        _, backup_filename = output_file(output, results, logger, append=(action == "append"))
+        _, backup_filename = output_file(filename, results, logger, append=(action == "append"))
         if backup_filename:
             logger.warning("Need to clean up backup file %s", backup_filename)
         # TODO: handle testing apachectl config
