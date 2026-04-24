@@ -21,7 +21,7 @@ dynamic = [
 dependencies = [
     "requests >=2.33.1",
     "sudo >=1.0.0",
-    "click >=8.3.2"
+    "click >=8.3.3"
 ]
 
 [project.optional-dependencies]
